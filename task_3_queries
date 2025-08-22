@@ -1,0 +1,60 @@
+--top 5 selling products
+SELECT 
+    t.name AS track_name,
+    SUM(il.quantity) AS units_sold
+FROM track AS t
+JOIN invoice_line AS il 
+    ON t.track_id = il.track_id
+GROUP BY t.name
+ORDER BY units_sold DESC
+LIMIT 5;
+-- Monthly Performance 
+SELECT
+  DATE_TRUNC('month', i.invoice_date) AS month,
+  SUM(i.total) AS monthly_revenue,
+  COUNT(i.invoice_id) AS total_orders
+FROM
+  invoice i
+GROUP BY
+  month
+ORDER BY
+  month;
+ -- Top 5 Most Purchased Albums
+SELECT
+    al.title AS album_title,
+    ar.name AS artist_name,
+    SUM(il.quantity) AS total_units_sold
+FROM album al
+JOIN artist ar ON al.artist_id = ar.artist_id
+JOIN track t ON al.album_id = t.album_id
+JOIN invoice_line il ON t.track_id = il.track_id
+GROUP BY al.title, ar.name
+ORDER BY total_units_sold DESC
+LIMIT 5;
+-- Revenue per Region
+SELECT
+    CASE
+        WHEN c.country IN ('USA', 'Canada', 'Brazil') THEN 'Americas'
+        WHEN c.country IN ('France', 'Germany', 'United Kingdom', 'Spain', 'Italy') THEN 'Europe'
+        WHEN c.country IN ('India', 'Japan', 'Australia') THEN 'Asia-Pacific'
+        ELSE 'Other'
+    END AS region,
+    SUM(i.total) AS total_revenue,
+    COUNT(DISTINCT c.customer_id) AS unique_customers
+FROM customer c
+JOIN invoice i ON c.customer_id = i.customer_id
+GROUP BY region
+ORDER BY total_revenue DESC; 
+  -- Customer Lifetime Value (CLV)
+SELECT
+    c.customer_id,
+    c.first_name || ' ' || c.last_name AS customer_name,
+    COUNT(i.invoice_id) AS total_orders,
+    SUM(i.total) AS lifetime_value,
+    ROUND(AVG(i.total), 2) AS avg_order_value
+FROM customer AS c
+JOIN invoice AS i 
+    ON c.customer_id = i.customer_id
+GROUP BY c.customer_id, customer_name
+ORDER BY lifetime_value DESC
+LIMIT 10;
